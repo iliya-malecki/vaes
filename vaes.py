@@ -16,8 +16,6 @@ class Sampling(L.Layer):
 		return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 
-
-
 def decaying(length, initial, final, slope):
     def weight_impl(iterations):
         sigmoid_shape = 1 + tf.exp(
@@ -28,7 +26,18 @@ def decaying(length, initial, final, slope):
     return weight_impl
 
 
-
+def cos_decaying(high, low, halfperiod, decay, flatten_after_nth=np.inf):
+    used_halfperiod = np.pi/halfperiod
+    used_high = high/2
+    decay_base = 1 + decay/halfperiod
+    cutoff = halfperiod + halfperiod * (flatten_after_nth-1) * 2
+    def weight_impl(iterations):
+        return tf.where(
+            iterations > cutoff,
+            low,
+            (tf.cos(iterations*used_halfperiod)+1)*used_high*decay_base**(-iterations)+low
+        )
+    return weight_impl
 
 
 class VAE(keras.Model):
