@@ -113,6 +113,8 @@ class VAE(keras.Model):
                     'reconstruction_loss':reconstruction_loss,
                     'kl_divergence_loss':kl_divergence_loss,
                 }
+            if self.optimizer.iterations < 100:
+                loss = reconstruction_loss
 
 
         self._validate_target_and_loss(y, loss)
