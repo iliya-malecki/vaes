@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import plotly.express as px
 from tensorflow import keras
 import pandas as pd
 
@@ -46,26 +45,22 @@ def plot_latent(decoder, scale, nonlinear=False):
 
 def evaluate(model, x_test, y_test):
     intermediate_layer_model = keras.Model(inputs=model.encoder.input, outputs=model.encoder.get_layer('z_log_var').output)
-    vars = np.exp(0.5*intermediate_layer_model.predict(x_test[[0],:,:,:]))
-    print(f'{vars = }')
+    variances = np.exp(0.5*intermediate_layer_model.predict(x_test[[0],:,:,:]))
+    print(f'{variances = }')
     pred_means, pred_vars = model.encoder.predict(x_test)
     preddf = pd.DataFrame(pred_means, columns=['x','y']).assign(label=y_test)
-    px.scatter(
-        preddf,
-        x='x',
-        y='y',
-        color='label',
-        width=600,
-        height=600,
-        opacity=0.7
-    ).update_traces(marker_size=3).show()
-    px.imshow(
-        np.stack([
-            x_test[28, ..., 0],
-            model.predict(x_test[[28]])[0, ..., 0]
-            ]),
-        facet_col=0
-    ).show()
+
+    plt.scatter(
+        preddf['x'],
+        preddf['y'],
+        c=preddf['label'],
+        s=1,
+        alpha=0.3,
+    )
+
+    fig, axs = plt.subplots(1,2)
+    axs[0].imshow(x_test[28, ..., 0])
+    axs[1].imshow(model.predict(x_test[[28]])[0, ..., 0])
 
     plot_latent(
         model.decoder,
